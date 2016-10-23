@@ -9,17 +9,18 @@
 import UIKit
 
 class ViewController: UIViewController {
-
+    
+    var notification: Notification!
+    
     override func viewDidLoad() {
-        super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        self.notification = Notification { granted, error in
+            if !granted {
+                print("Notification not granted!")
+            }
+        }
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    
+    @IBAction func datePickerDidSelectNewDate(_ sender: UIDatePicker) {
+        notification.scheduleNotificationAt(date: sender.date)
     }
-
-
 }
-
