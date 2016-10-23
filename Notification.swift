@@ -9,13 +9,21 @@
 import UserNotifications
 
 class Notification: NSObject {
+    
+    private let center = UNUserNotificationCenter.current()
 
     init(authorizationCompletion: @escaping (Bool, Error?) -> Void) {
         super.init()
-        UNUserNotificationCenter.current()
-            .requestAuthorization(options: [.alert, .sound]) { (granted, error) in
+        center.requestAuthorization(options: [.alert, .sound]) { (granted, error) in
             authorizationCompletion(granted, error)
         }
+        
+        let action = UNNotificationAction(identifier: "remindLater", title: "Remind Later",
+                                          options: [])
+        let category = UNNotificationCategory(identifier: "myCategory", actions: [action],
+                                              intentIdentifiers: [], options: [])
+        center.setNotificationCategories([category])
+        center.delegate = self
     }
     
     func scheduleNotificationAt(date: Date) {
@@ -29,6 +37,7 @@ class Notification: NSObject {
         notificationContent.title = "Notification Content"
         notificationContent.body = "This is notification content form class UNMutableNotificationContent"
         notificationContent.sound = UNNotificationSound.default()
+        notificationContent.categoryIdentifier = "myCategory"
         
         if let path = Bundle.main.path(forResource: "logo", ofType: "png") {
             let url = URL(fileURLWithPath: path)
@@ -50,5 +59,13 @@ class Notification: NSObject {
             }
         }
     }
-    
+}
+
+extension Notification: UNUserNotificationCenterDelegate {
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        if response.actionIdentifier == "remindLater" {
+            let newDate = Date(timeInterval: 900, since: Date())
+            scheduleNotificationAt(date: newDate)
+        }
+    }
 }
